@@ -22,16 +22,18 @@ module JacintheManagement
       item
     end
 
+    # @param [String] qry SQl query
+    # @return [Fetch] a new instance
     def initialize(qry)
       @fetch = Sql.answer_to_query(JACINTHE_MODE, qry)
     end
 
-    attr_reader :fetch
-
+    # @return [Array<Array>] query answer : lines split by TAB
     def array
       @fetch.map { |line| line.chomp.split(TAB) }
     end
 
+    # @return [Array<Hash>] query answer : array of hashes
     def hashes
       ary = array
       keys = ary.shift
@@ -46,6 +48,7 @@ module JacintheManagement
     end
 
     # FIXME: choose Array or Hash
+    # @return [Array] query answer : array (indexed by id, value is rest of record)
     def table
       table = []
       array.drop(1).each do |line|

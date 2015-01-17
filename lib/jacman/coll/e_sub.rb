@@ -1,14 +1,15 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# File: abo.rb
+# File: e_sub.rb
 # Created: 26 December 2014
 #
 # (c) Michel Demazure <michel@demazure.com>
 
 module JacintheManagement
   module Coll
-    class Abo
+    # current electronic subscriptions
+    class ESub
       # TODO: to put in a file
       SQL = 'SELECT client_sage_client_final tiers_id, \
 abonnement_client_sage client_sage_id,  tiers_drupal drupal_id, revue_code revue, \
@@ -20,10 +21,12 @@ WHERE abonnement_type = 2 \
 AND abonnement_annee >= year(now()) - 1 \
 AND abonnement_ignorer = 0'
 
+      # @return [Array<Hash>] all electronic e_subs as hashes
       def self.all
         @all ||= Fetch.new('{SQL};').hashes
-        end
+      end
 
+      # @return [Array<Hash>] all institutional electronic e_subs as hashes
       def self.all_institutional
         @all ||= Fetch.new("#{SQL} AND tiers_type = 2;").hashes
       end
@@ -32,5 +35,5 @@ AND abonnement_ignorer = 0'
 end
 
 puts '-------------'
-p JacintheManagement::Coll::Abo.all_institutional
+p JacintheManagement::Coll::ESub.all_institutional
 puts '-------------'

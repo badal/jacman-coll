@@ -15,7 +15,7 @@ module JacintheManagement
         @tiers = Coll.fetch_tiers(tiers_id)
         range = @tiers[:tiers_ip_plage]
         @ranges = range ? range.chomp.split('\\n') : []
-       end
+      end
 
       def compare_ranges(given_ranges)
         range_set = @ranges.to_set

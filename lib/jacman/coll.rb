@@ -12,7 +12,7 @@ require 'set'
 require_relative 'coll/version.rb'
 require_relative 'coll/fetch.rb'
 require_relative 'coll/globals.rb'
-require_relative 'coll/abo.rb'
+require_relative 'coll/e_sub.rb'
 require_relative 'coll/collective.rb'
 require_relative 'coll/tiers.rb'
 
