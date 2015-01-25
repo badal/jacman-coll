@@ -8,30 +8,73 @@
 
 module JacintheManagement
   module Coll
+    # collective electronic subscriptions
     class CollectiveSubscription
-      # FIXME: keys of table being integers, table could be an array
-      # FIXME: yes, but it can be convenient to keep subscribers which are not yet Tiers
+      attr_reader :name, :provider
+      attr_accessor :journal_ids, :tiers_list, :billing, :year
 
-      attr_accessor :journal_ids, :table, :billing
-      def initialize(client_id, billing = nil, journal_ids = [], table = {}, year = YEAR)
-        @client = Coll.fetch_client(client_id)
+      # @param [String] name of subscription to be used in Jacinthe
+      # @param [String] Jacinthe id of Client who provided the coll. subs.
+      # @param [String] billing billing for the coll. sub.
+      # @param [Array<Integer>] journal_ids list of journals (revue_id)
+      # @param [Array<Integer>Object] tiers_list list of subscribers (tiers_id)
+      # @param [Integer] year year of coll. sub.
+      def initialize(name, provider, billing = nil, journal_ids = [], tiers_list = [], year = YEAR)
+        @name = name
+        @provider = provider
         @journal_ids = journal_ids
-        @table = table
+        @tiers_list = tiers_list
         @billing = billing
         @year = year
       end
 
-      def name
-        @client[:client_sage_abrege]
+      # build specific client and return client_id
+      # for *existing* tiers
+      # @param [Integer] tiers_id
+      def client_hash_for(tiers_id)
+        {
+            client_sage_id: "'#{tiers_id}#{@name}'",
+            client_sage_client_final: "#{tiers_id}",
+            client_sage_intitule: "'#{tiers_id}/Collective/#{name}'",
+            client_sage_abrege: "'#{tiers_id}-#{@name}'",
+            client_sage_compte_collectif: 1,
+            client_sage_categorie_comptable: 1,
+            client_sage_paiement_chez: "'#{@provider}'",
+            client_sage_livraison_chez: "'#{tiers_id}'"
+        }
+      end
+
+      def client_for(tiers_id)
+        hsh = client_hash_for(tiers_id)
+        cl = Coll.fetch_client(hsh[:client_sage_id])
+        return cl if cl
+        Coll.insert_in_base('client_sage', hsh)
+        Coll.fetch_client(hsh[:client_sage_id])
+      end
+
+      # build individual subscription
+      def build_subscription(revue, client)
+
       end
 
       def remark
-        "IP_#{name}"
+        "Coll_#{name}"
       end
 
       def reference
-        "ref_#{name}"
+        "Coll_#{name}"
       end
+
+
     end
   end
 end
+
+include JacintheManagement
+include Coll
+
+coll = CollectiveSubscription.new('ESSAI3', '1610')
+
+client = coll.client_for(383)
+
+p client

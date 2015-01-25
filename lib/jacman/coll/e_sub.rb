@@ -34,6 +34,8 @@ AND abonnement_ignorer = 0'
   end
 end
 
+__END__
+
 puts '-------------'
 p JacintheManagement::Coll::ESub.all_institutional
 puts '-------------'

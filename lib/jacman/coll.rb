@@ -15,6 +15,7 @@ require_relative 'coll/globals.rb'
 require_relative 'coll/e_sub.rb'
 require_relative 'coll/collective.rb'
 require_relative 'coll/tiers.rb'
+require_relative 'coll/provider.rb'
 
 require_relative 'coll/cnrs.rb'
 require_relative 'coll/ams.rb'

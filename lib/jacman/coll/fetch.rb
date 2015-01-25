@@ -14,13 +14,13 @@ module JacintheManagement
     # @param [String] database_name name of table in database
     # @param [String] name for error report
     # @param [#to_s] id identifier of record
-    # @return [Hash] record as a Hash
-    def self.item(database_name, name, id)
+    # @return [Hash|nil] record as a Hash, nil if not existing
+    def self.item(database_name, id)
       query = "select * from #{database_name} where #{database_name}_id = \"#{id}\""
-      item = Fetch.new(query).hashes.first
-      fail ArgumentError, "#{name} with id #{id} does not exist in database" unless item
-      item
+      Fetch.new(query).hashes.first
     end
+
+    attr_reader :fetch
 
     # @param [String] qry SQl query
     # @return [Fetch] a new instance

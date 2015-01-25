@@ -8,9 +8,10 @@
 
 module JacintheManagement
   module Coll
+    # to store needed Tiers methods for managing coll. subs.
     class Tiers
       attr_reader :ranges
-
+      # @param [Integer] tiers_id jacinthe id of this Tiers
       def initialize(tiers_id)
         @tiers = Coll.fetch_tiers(tiers_id)
         range = @tiers[:tiers_ip_plage]
@@ -33,6 +34,8 @@ module JacintheManagement
     end
   end
 end
+
+__END__
 
 begin
   JacintheManagement::Coll::Tiers.new(-1)

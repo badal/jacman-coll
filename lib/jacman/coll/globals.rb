@@ -11,11 +11,25 @@ module JacintheManagement
     YEAR = Time.now.year
 
     def self.fetch_tiers(tiers_id)
-      Fetch.item('tiers', 'Tiers', tiers_id)
+      Fetch.item('tiers', tiers_id)
     end
 
     def self.fetch_client(client_id)
-      Fetch.item('client_sage', 'Client', client_id)
+      Fetch.item('client_sage', client_id)
+    end
+
+    def self.fetch_client_for_tiers(tiers_id)
+      qry = "select * from client_sage where client_sage_client_final=#{tiers_id}"
+      Fetch.new(qry).hashes
+    end
+
+    # @return [String] MySql insertion query
+    # @param [String] table where record has to be inserted
+    # @param [Hash] hsh  column => value
+    def self.insert_in_base(table, hsh)
+      qry = "INSERT IGNORE INTO #{table} (#{hsh.keys.join(', ')})\
+ VALUES (#{hsh.values.join(', ')})"
+      Fetch.new(qry).fetch
     end
 
     # @return [Array] indexed by journal_id, values are couples [acronym, name]
@@ -48,7 +62,10 @@ end
 
 p JacintheManagement::Coll.journals
 
-p JacintheManagement::Coll.fetch_client('383')
+p JacintheManagement::Coll.fetch_client_for_tiers(5)
+p JacintheManagement::Coll.fetch_client(5)
+p JacintheManagement::Coll.fetch_client("383")
+
 
 __END__
 

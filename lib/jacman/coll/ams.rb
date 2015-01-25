@@ -6,12 +6,8 @@
 #
 # (c) Michel Demazure <michel@demazure.com> begin
 
-AMS = JacintheManagement::Coll::CollectiveSubscription.new('15')
+AMS = JacintheManagement::Coll::Provider.new('15')
 AMS_tiers = JacintheManagement::Coll::Tiers.new(15)
-
-p AMS.name
-
-puts AMS_tiers.ranges
 
 def table_extracted_from(ranges)
   table = {}
@@ -28,8 +24,9 @@ def table_extracted_from(ranges)
   table
 end
 
-table = table_extracted_from(AMS_tiers.ranges)
+__END__
 
+table = table_extracted_from(AMS_tiers.ranges)
 table.each_pair do |key, list|
   print "#{key} : "
   if key.is_a?(Integer)
@@ -39,3 +36,7 @@ table.each_pair do |key, list|
     puts 'no tiers'
   end
 end
+
+p AMS.name
+
+puts AMS_tiers.ranges
