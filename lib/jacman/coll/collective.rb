@@ -6,6 +6,14 @@
 #
 # (c) Michel Demazure <michel@demazure.com>
 
+# reopening base class
+class Fixnum
+  # @return [String] the last two digits
+  def two_digits
+    format('%02d', self % 100)
+  end
+end
+
 module JacintheManagement
   module Coll
     # collective electronic subscriptions
@@ -13,48 +21,87 @@ module JacintheManagement
       attr_reader :name, :provider
       attr_accessor :journal_ids, :tiers_list, :billing, :year
 
+      # FIXME: choose whether provider is a Client or a client_sage_id
+
       # @param [String] name of subscription to be used in Jacinthe
       # @param [String] Jacinthe id of Client who provided the coll. subs.
       # @param [String] billing billing for the coll. sub.
       # @param [Array<Integer>] journal_ids list of journals (revue_id)
       # @param [Array<Integer>Object] tiers_list list of subscribers (tiers_id)
       # @param [Integer] year year of coll. sub.
-      def initialize(name, provider, billing = nil, journal_ids = [], tiers_list = [], year = YEAR)
+      def initialize(name, provider, billing, journal_ids = [], tiers_list = [], year = YEAR)
         @name = name
-        @provider = provider
         @journal_ids = journal_ids
         @tiers_list = tiers_list
-        @billing = billing
-        @year = year
+        @base_client_hash = build_base_client_hash(provider)
+        @base_subscription_hash = build_base_subscription_hash(name, year, billing)
       end
 
-      # build specific client and return client_id
-      # for *existing* tiers
-      # @param [Integer] tiers_id
-      def client_hash_for(tiers_id)
+      def build_base_client_hash(provider)
+        unless Coll.fetch_client(provider)
+          fail ArgumentError, "Pas de client #{provider}"
+        end
         {
+            client_sage_compte_collectif: 1,
+            client_sage_categorie_comptable: 1,
+            client_sage_paiement_chez: "'#{provider}'",
+        }
+      end
+
+      def build_base_subscription_hash(name, year, billing)
+        {
+            abonnement_annee: year,
+            abonnement_type: 2,
+            abonnement_remarque: "'abonnement collectif #{name}'",
+            abonnement_facture: "'#{billing}'",
+            abonnement_reference_commande: "'ABO#{year.two_digits}-#{name}'"
+        }
+      end
+
+      # build specific client hash
+      #
+      # @param [Integer] tiers_id
+      # @return [Hash] parameter hash for client
+      def client_hash_for(tiers_id)
+        specific = {
             client_sage_id: "'#{tiers_id}#{@name}'",
             client_sage_client_final: "#{tiers_id}",
             client_sage_intitule: "'#{tiers_id}/Collective/#{name}'",
             client_sage_abrege: "'#{tiers_id}-#{@name}'",
-            client_sage_compte_collectif: 1,
-            client_sage_categorie_comptable: 1,
-            client_sage_paiement_chez: "'#{@provider}'",
-            client_sage_livraison_chez: "'#{tiers_id}'"
+           client_sage_livraison_chez: "'#{tiers_id}'"
         }
+        @base_client_hash.merge(specific)
       end
 
-      def client_for(tiers_id)
+      # return client_id of specific client (having created it if necessary)
+      #
+      # @param [Integer] tiers_id id of tiers
+      # @return [String] client_sage_id for the specific client
+      def specific_client_for(tiers_id)
         hsh = client_hash_for(tiers_id)
-        cl = Coll.fetch_client(hsh[:client_sage_id])
-        return cl if cl
-        Coll.insert_in_base('client_sage', hsh)
-        Coll.fetch_client(hsh[:client_sage_id])
+        client_id = hsh[:client_sage_id]
+        cl = Coll.fetch_client(client_id)
+        Coll.insert_in_base('client_sage', hsh) unless cl
+        client_id
+      end
+
+      # build individual subscription hash
+      #
+      # @param [String] client_id
+      # @return [Hash] parameter hash for subscription
+      # @param [Integer] journal_id id of journal
+      def subscription_hash_for(client_id, journal_id)
+        specific = {
+            abonnement_client_sage: "'#{client_id}'",
+            abonnement_revue: journal_id,
+         }
+        @base_subscription_hash.merge(specific)
       end
 
       # build individual subscription
-      def build_subscription(revue, client)
-
+      def build_subscription(client_id, journal_id)
+        hsh = subscription_hash_for(client_id, journal_id)
+        return Coll.insert_if_needed('abonnement', hsh)
       end
 
       def remark
@@ -65,7 +112,6 @@ module JacintheManagement
         "Coll_#{name}"
       end
 
-
     end
   end
 end
@@ -73,8 +119,14 @@ end
 include JacintheManagement
 include Coll
 
-coll = CollectiveSubscription.new('ESSAI3', '1610')
+coll = CollectiveSubscription.new('ESSAI', '1610', 'FA312')
 
-client = coll.client_for(383)
+client = coll.specific_client_for(383)
 
 p client
+
+hsh = coll.subscription_hash_for('383ESSAI', 2)
+
+p Coll.find('abonnement', hsh)
+
+p Coll.insert_if_needed('abonnement', hsh)

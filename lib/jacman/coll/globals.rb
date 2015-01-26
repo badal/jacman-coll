@@ -29,8 +29,41 @@ module JacintheManagement
     def self.insert_in_base(table, hsh)
       qry = "INSERT IGNORE INTO #{table} (#{hsh.keys.join(', ')})\
  VALUES (#{hsh.values.join(', ')})"
-      Fetch.new(qry).fetch
+      answer = Fetch.new(qry).fetch
+      fail "Invalid insert query #{qry}" unless answer.empty?
     end
+
+    # @param [String] table where record has to be inserted
+    # @param [Hash] hsh  column => value
+    def self.selection_query(table, hsh)
+      qry = "SELECT #{table}_id FROM #{table} WHERE "
+      criteria = hsh.each_pair.map do |key, value|
+        "#{key}=#{value}"
+      end.join(' AND ')
+      qry + criteria
+    end
+
+    # @param [String] table where record has to be searched
+    # @param [Hash] hsh  column => value
+    # @return [Object] identifier or nil
+    def self.find(table, hsh)
+      qry = Coll.selection_query(table, hsh)
+      ans = Fetch.new(qry).array.last
+      ans ? ans.first.to_i : ans
+    end
+
+    # @param [String] table where record has to be inserted
+    # @param [Hash] hsh  column => value
+    # @return [Object] identifier
+    def self.insert_if_needed(table, hsh)
+      number = find(table, hsh)
+      return number if number
+      Coll.insert_in_base(table, hsh)
+      find(table, hsh)
+    end
+
+
+
 
     # @return [Array] indexed by journal_id, values are couples [acronym, name]
     def self.journals

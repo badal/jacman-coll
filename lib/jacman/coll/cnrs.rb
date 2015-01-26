@@ -9,7 +9,7 @@
 # TODO: build a new client : '1610EBSCO'
 CNRS = JacintheManagement::Coll::Provider.new('1610')
 
-RNBM = JacintheManagement::Coll::CollectiveSubscription.new('RNBM', CNRS)
+RNBM = JacintheManagement::Coll::CollectiveSubscription.new('RNBM', '1610', 'FA312')
 
 RNBM.journal_ids = [1, 2, 6, 17]
 
