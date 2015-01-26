@@ -23,6 +23,8 @@ module JacintheManagement
       Fetch.new(qry).hashes
     end
 
+    # TODO: fail doe not work ???
+
     # @return [String] MySql insertion query
     # @param [String] table where record has to be inserted
     # @param [Hash] parameters  column => value
@@ -62,9 +64,6 @@ module JacintheManagement
       find(table, parameters)
     end
 
-
-
-
     # @return [Array] indexed by journal_id, values are couples [acronym, name]
     def self.journals
       @journals ||= fetch_journals
@@ -95,10 +94,11 @@ end
 
 p JacintheManagement::Coll.journals
 
-p JacintheManagement::Coll.fetch_client_for_tiers(5)
-p JacintheManagement::Coll.fetch_client(5)
-p JacintheManagement::Coll.fetch_client("383")
+puts JacintheManagement::Coll.fetch_client_for_tiers(383)
 
+p JacintheManagement::Coll.fetch_client('383ESSAI')
+
+p JacintheManagement::Fetch.item('abonnement', 36_945)
 
 __END__
 

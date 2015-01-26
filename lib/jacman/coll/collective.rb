@@ -21,20 +21,28 @@ module JacintheManagement
       attr_reader :name, :provider
       attr_accessor :journal_ids, :tiers_list, :billing, :year
 
-      # FIXME: choose whether provider is a Client or a client_sage_id
-
       # @param [String] name of subscription to be used in Jacinthe
-      # @param [String] Jacinthe id of Client who provided the coll. subs.
+      # @param [String] provider Jacinthe id of Client who provided the coll. subs.
       # @param [String] billing billing for the coll. sub.
       # @param [Array<Integer>] journal_ids list of journals (revue_id)
       # @param [Array<Integer>Object] tiers_list list of subscribers (tiers_id)
       # @param [Integer] year year of coll. sub.
-      def initialize(name, provider, billing, journal_ids = [], tiers_list = [], year = YEAR)
+      def initialize(name, provider, billing = 'NULL', journal_ids = [], tiers_list = [], year = YEAR)
         @name = name
         @journal_ids = journal_ids
         @tiers_list = tiers_list
+        @registry = []
         @base_client_hash = build_base_client_hash(provider)
         @base_subscription_hash = build_base_subscription_hash(name, year, billing)
+      end
+
+      def register(tiers_id, client_id, revue_id, abonnement_id)
+        @registry << [tiers_id, client_id, revue_id, abonnement_id]
+      end
+
+      # TODO: write method
+      def save_registry
+        p @registry
       end
 
       def build_base_client_hash(provider)
@@ -42,19 +50,19 @@ module JacintheManagement
           fail ArgumentError, "Pas de client #{provider}"
         end
         {
-            client_sage_compte_collectif: 1,
-            client_sage_categorie_comptable: 1,
-            client_sage_paiement_chez: "'#{provider}'",
+          client_sage_compte_collectif: 1,
+          client_sage_categorie_comptable: 1,
+          client_sage_paiement_chez: "'#{provider}'"
         }
       end
 
       def build_base_subscription_hash(name, year, billing)
         {
-            abonnement_annee: year,
-            abonnement_type: 2,
-            abonnement_remarque: "'abonnement collectif #{name}'",
-            abonnement_facture: "'#{billing}'",
-            abonnement_reference_commande: "'ABO#{year.two_digits}-#{name}'"
+          abonnement_annee: year,
+          abonnement_type: 2,
+          abonnement_remarque: "'abonnement collectif #{name}'",
+          abonnement_facture: "'#{billing}'",
+          abonnement_reference_commande: "'ABO#{year.two_digits}-#{name}'"
         }
       end
 
@@ -64,11 +72,11 @@ module JacintheManagement
       # @return [Hash] parameter hash for client
       def client_parameters_for(tiers_id)
         specific = {
-            client_sage_id: "'#{tiers_id}#{@name}'",
-            client_sage_client_final: "#{tiers_id}",
-            client_sage_intitule: "'#{tiers_id}/Collective/#{name}'",
-            client_sage_abrege: "'#{tiers_id}-#{@name}'",
-           client_sage_livraison_chez: "'#{tiers_id}'"
+          client_sage_id: "'#{tiers_id}#{@name}'",
+          client_sage_client_final: "#{tiers_id}",
+          client_sage_intitule: "'#{tiers_id}/Collectif/#{name}'",
+          client_sage_abrege: "'#{tiers_id}-#{@name}'",
+          client_sage_livraison_chez: "'#{tiers_id}'"
         }
         @base_client_hash.merge(specific)
       end
@@ -92,9 +100,9 @@ module JacintheManagement
       # @param [Integer] journal_id id of journal
       def subscription_parameters_for(client_id, journal_id)
         specific = {
-            abonnement_client_sage: "'#{client_id}'",
-            abonnement_revue: journal_id,
-         }
+          abonnement_client_sage: client_id,
+          abonnement_revue: journal_id
+        }
         @base_subscription_hash.merge(specific)
       end
 
@@ -102,6 +110,18 @@ module JacintheManagement
       def build_subscription(client_id, journal_id)
         parameters = subscription_parameters_for(client_id, journal_id)
         Coll.insert_if_needed('abonnement', parameters)
+      end
+
+      def process
+        @tiers_list.each do |tiers_id|
+          client_id = specific_client_for(tiers_id)
+          p client_id
+          @journal_ids.each do |journal_id|
+            sub = build_subscription(client_id, journal_id)
+            register(tiers_id, client_id, journal_id, sub)
+          end
+        end
+        save_registry
       end
     end
   end
@@ -111,13 +131,6 @@ include JacintheManagement
 include Coll
 
 coll = CollectiveSubscription.new('ESSAI', '1610', 'FA312')
-
-client = coll.specific_client_for(383)
-
-p client
-
-hsh = coll.subscription_parameters_for('383ESSAI', 2)
-
-p Coll.find('abonnement', hsh)
-
-p Coll.insert_if_needed('abonnement', hsh)
+coll.journal_ids = [1, 2, 6, 17, 20]
+coll.tiers_list = [383, 9999]
+coll.process

@@ -12,7 +12,6 @@ module JacintheManagement
 
     # fetch a record in database
     # @param [String] database_name name of table in database
-    # @param [String] name for error report
     # @param [#to_s] id identifier of record
     # @return [Hash|nil] record as a Hash, nil if not existing
     def self.item(database_name, id)

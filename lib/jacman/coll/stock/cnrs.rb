@@ -33,4 +33,3 @@ def table_extracted_from(ranges)
   end
   table
 end
-
