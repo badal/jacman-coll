@@ -25,41 +25,41 @@ module JacintheManagement
 
     # @return [String] MySql insertion query
     # @param [String] table where record has to be inserted
-    # @param [Hash] hsh  column => value
-    def self.insert_in_base(table, hsh)
-      qry = "INSERT IGNORE INTO #{table} (#{hsh.keys.join(', ')})\
- VALUES (#{hsh.values.join(', ')})"
+    # @param [Hash] parameters  column => value
+    def self.insert_in_base(table, parameters)
+      qry = "INSERT IGNORE INTO #{table} (#{parameters.keys.join(', ')})\
+ VALUES (#{parameters.values.join(', ')})"
       answer = Fetch.new(qry).fetch
       fail "Invalid insert query #{qry}" unless answer.empty?
     end
 
     # @param [String] table where record has to be inserted
-    # @param [Hash] hsh  column => value
-    def self.selection_query(table, hsh)
+    # @param [Hash] parameters  column => value
+    def self.selection_query(table, parameters)
       qry = "SELECT #{table}_id FROM #{table} WHERE "
-      criteria = hsh.each_pair.map do |key, value|
+      criteria = parameters.each_pair.map do |key, value|
         "#{key}=#{value}"
       end.join(' AND ')
       qry + criteria
     end
 
     # @param [String] table where record has to be searched
-    # @param [Hash] hsh  column => value
+    # @param [Hash] parameters  column => value
     # @return [Object] identifier or nil
-    def self.find(table, hsh)
-      qry = Coll.selection_query(table, hsh)
+    def self.find(table, parameters)
+      qry = Coll.selection_query(table, parameters)
       ans = Fetch.new(qry).array.last
       ans ? ans.first.to_i : ans
     end
 
     # @param [String] table where record has to be inserted
-    # @param [Hash] hsh  column => value
+    # @param [Hash] parameters  column => value
     # @return [Object] identifier
-    def self.insert_if_needed(table, hsh)
-      number = find(table, hsh)
+    def self.insert_if_needed(table, parameters)
+      number = find(table, parameters)
       return number if number
-      Coll.insert_in_base(table, hsh)
-      find(table, hsh)
+      Coll.insert_in_base(table, parameters)
+      find(table, parameters)
     end
 
 

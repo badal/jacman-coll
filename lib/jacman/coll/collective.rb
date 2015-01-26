@@ -62,7 +62,7 @@ module JacintheManagement
       #
       # @param [Integer] tiers_id
       # @return [Hash] parameter hash for client
-      def client_hash_for(tiers_id)
+      def client_parameters_for(tiers_id)
         specific = {
             client_sage_id: "'#{tiers_id}#{@name}'",
             client_sage_client_final: "#{tiers_id}",
@@ -78,10 +78,10 @@ module JacintheManagement
       # @param [Integer] tiers_id id of tiers
       # @return [String] client_sage_id for the specific client
       def specific_client_for(tiers_id)
-        hsh = client_hash_for(tiers_id)
-        client_id = hsh[:client_sage_id]
+        parameters = client_parameters_for(tiers_id)
+        client_id = parameters[:client_sage_id]
         cl = Coll.fetch_client(client_id)
-        Coll.insert_in_base('client_sage', hsh) unless cl
+        Coll.insert_in_base('client_sage', parameters) unless cl
         client_id
       end
 
@@ -90,7 +90,7 @@ module JacintheManagement
       # @param [String] client_id
       # @return [Hash] parameter hash for subscription
       # @param [Integer] journal_id id of journal
-      def subscription_hash_for(client_id, journal_id)
+      def subscription_parameters_for(client_id, journal_id)
         specific = {
             abonnement_client_sage: "'#{client_id}'",
             abonnement_revue: journal_id,
@@ -100,18 +100,9 @@ module JacintheManagement
 
       # build individual subscription
       def build_subscription(client_id, journal_id)
-        hsh = subscription_hash_for(client_id, journal_id)
-        return Coll.insert_if_needed('abonnement', hsh)
+        parameters = subscription_parameters_for(client_id, journal_id)
+        Coll.insert_if_needed('abonnement', parameters)
       end
-
-      def remark
-        "Coll_#{name}"
-      end
-
-      def reference
-        "Coll_#{name}"
-      end
-
     end
   end
 end
@@ -125,7 +116,7 @@ client = coll.specific_client_for(383)
 
 p client
 
-hsh = coll.subscription_hash_for('383ESSAI', 2)
+hsh = coll.subscription_parameters_for('383ESSAI', 2)
 
 p Coll.find('abonnement', hsh)
 
