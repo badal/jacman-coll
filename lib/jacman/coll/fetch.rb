@@ -24,7 +24,7 @@ module JacintheManagement
     # @param [String] qry SQl query
     # @return [Fetch] a new instance
     def initialize(qry)
-      @fetch = Sql.answer_to_query(JACINTHE_MODE, qry)
+      @fetch = Sql.answer_to_query(JACINTHE_MODE, qry, '2>&1')
     end
 
     # @return [Array<Array>] query answer : lines split by TAB

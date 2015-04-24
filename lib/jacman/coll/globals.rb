@@ -23,8 +23,6 @@ module JacintheManagement
       Fetch.new(qry).hashes
     end
 
-    # TODO: fail doe not work ???
-
     # @return [String] MySql insertion query
     # @param [String] table where record has to be inserted
     # @param [Hash] parameters  column => value
@@ -32,7 +30,7 @@ module JacintheManagement
       qry = "INSERT IGNORE INTO #{table} (#{parameters.keys.join(', ')})\
  VALUES (#{parameters.values.join(', ')})"
       answer = Fetch.new(qry).fetch
-      fail "Invalid insert query #{qry}" unless answer.empty?
+      fail(SQLError, "Invalid insert query #{qry}") unless answer.empty?
     end
 
     # @param [String] table where record has to be inserted
@@ -91,14 +89,6 @@ module JacintheManagement
     end
   end
 end
-
-p JacintheManagement::Coll.journals
-
-puts JacintheManagement::Coll.fetch_client_for_tiers(383)
-
-p JacintheManagement::Coll.fetch_client('383ESSAI')
-
-p JacintheManagement::Fetch.item('abonnement', 36_945)
 
 __END__
 
