@@ -8,7 +8,7 @@
 
 utils =  File.expand_path('../../../jacman-utils/lib/jacman/utils.rb')
 
-require utils
+# require utils
 
 # require 'set'
 

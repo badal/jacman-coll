@@ -18,8 +18,8 @@ module JacintheManagement
   module Coll
     # collective electronic subscriptions
     class CollectiveSubscription
-      attr_reader :name
-      attr_accessor :journal_ids, :tiers_list, :billing, :year
+      attr_reader :name, :client_list
+      attr_accessor :journal_ids, :billing, :year
 
       # @param [String] name of subscription to be used in Jacinthe
       # @param [String] provider Jacinthe id of Client who provided the coll. subs.
@@ -27,17 +27,17 @@ module JacintheManagement
       # @param [Array<Integer>] journal_ids list of journals (revue_id)
       # @param [Array<Integer>Object] tiers_list list of subscribers (tiers_id)
       # @param [Integer] year year of coll. sub.
-      def initialize(name, provider, billing = 'NULL', journal_ids = [], tiers_list = [], year = YEAR)
+      def initialize(name, provider, billing = 'NULL', journal_ids = [], year = YEAR)
         @name = name
         @journal_ids = journal_ids
-        @tiers_list = tiers_list
+        @client_list = []
         @registry = []
         @base_client_hash = build_base_client_hash(provider)
         @base_subscription_hash = build_base_subscription_hash(name, year, billing)
       end
 
-      def register(tiers_id, client_id, revue_id, abonnement_id)
-        @registry << [tiers_id, client_id, revue_id, abonnement_id]
+      def register(client_id, revue_id, abonnement_id)
+        @registry << [client_id, revue_id, abonnement_id]
       end
 
       # TODO: write method
@@ -92,7 +92,6 @@ module JacintheManagement
         Coll.insert_in_base('client_sage', parameters) unless cl
         client_id
       rescue SQLError
-        puts "pas de tiers #{tiers_id } ou pas client pour ce tiers"
         nil
       end
 
@@ -119,15 +118,28 @@ module JacintheManagement
         else
           puts "Pas de journal électronique de numéro #{journal_id}"
         end
-       end
+      end
 
-      def process
-        @tiers_list.each do |tiers_id|
+      # TODO: comment
+      def add_tiers_list(list)
+        report = []
+        list.each do |tiers_id|
           client_id = specific_client_for(tiers_id)
-          next unless client_id
-           @journal_ids.each do |journal_id|
+          if client_id
+            @client_list << client_id
+          else
+            report <<  "pas de tiers #{tiers_id } ou pas de client pour ce tiers"
+          end
+        end
+        report
+      end
+
+      # TODO: comment
+      def process
+        @client_list.each do |client_id|
+          @journal_ids.each do |journal_id|
             sub_id = build_subscription(client_id, journal_id)
-            register(tiers_id, client_id, journal_id, sub_id) if sub_id
+            register(client_id, journal_id, sub_id) if sub_id
           end
         end
         save_registry
