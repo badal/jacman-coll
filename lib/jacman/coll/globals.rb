@@ -56,8 +56,7 @@ module JacintheManagement
     # @param [Hash] parameters  column => value
     # @return [Object] identifier
     def self.insert_if_needed(table, parameters)
-      number = find(table, parameters)
-      return number if number
+      return nil if find(table, parameters)
       Coll.insert_in_base(table, parameters)
       find(table, parameters)
     end

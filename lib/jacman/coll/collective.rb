@@ -18,7 +18,7 @@ module JacintheManagement
   module Coll
     # collective electronic subscriptions
     class CollectiveSubscription
-      attr_reader :name, :client_list
+      attr_reader :name, :client_list, :registry
       attr_accessor :journal_ids, :billing, :year
 
       # @param [String] name of subscription to be used in Jacinthe
@@ -30,14 +30,19 @@ module JacintheManagement
       def initialize(name, provider, billing = 'NULL', journal_ids = [], year = YEAR)
         @name = name
         @journal_ids = journal_ids
-        @client_list = []
+        @client_list = {}
         @registry = []
+        @year = year
         @base_client_hash = build_base_client_hash(provider)
-        @base_subscription_hash = build_base_subscription_hash(name, year, billing)
+        @base_subscription_hash = build_base_subscription_hash(name, billing)
       end
 
-      def register(client_id, revue_id, abonnement_id)
-        @registry << [client_id, revue_id, abonnement_id]
+      def register(type, tiers_id, client_id, revue_id, abonnement_id)
+        @registry << [type, tiers_id, client_id, revue_id, abonnement_id]
+      end
+
+      def register(*ary)
+        @registry << ary
       end
 
       # TODO: write method
@@ -56,13 +61,13 @@ module JacintheManagement
         }
       end
 
-      def build_base_subscription_hash(name, year, billing)
+      def build_base_subscription_hash(name, billing)
         {
             abonnement_annee: year,
             abonnement_type: 2,
             abonnement_remarque: "'abonnement collectif #{name}'",
             abonnement_facture: "'#{billing}'",
-            abonnement_reference_commande: "'ABO#{year.two_digits}-#{name}'"
+            abonnement_reference_commande: "'ABO#{@year.two_digits}-#{name}'"
         }
       end
 
@@ -112,11 +117,20 @@ module JacintheManagement
       def build_subscription(client_id, journal_id)
         parameters = subscription_parameters_for(client_id, journal_id)
         Coll.insert_if_needed('abonnement', parameters)
-        rescue SQLError
+      rescue SQLError
         if Coll.journals[journal_id]
           puts "Impossible de créer l'abonnement à #{Coll.journals[journal_id]}"
         else
           puts "Pas de journal électronique de numéro #{journal_id}"
+        end
+      end
+
+      # TODO: comment
+      def find_subscription(tiers_id, journal_id)
+        ESub.all.select do |item|
+          item[:tiers_id].to_i == tiers_id &&
+              item[:revue].to_i == journal_id &&
+              item[:annee].to_i == @year
         end
       end
 
@@ -126,9 +140,9 @@ module JacintheManagement
         list.each do |tiers_id|
           client_id = specific_client_for(tiers_id)
           if client_id
-            @client_list << client_id
+            @client_list[tiers_id] = client_id
           else
-            report <<  "pas de tiers #{tiers_id } ou pas de client pour ce tiers"
+            report << "pas de tiers #{tiers_id } ou pas de client pour ce tiers"
           end
         end
         report
@@ -136,13 +150,23 @@ module JacintheManagement
 
       # TODO: comment
       def process
-        @client_list.each do |client_id|
-          @journal_ids.each do |journal_id|
-            sub_id = build_subscription(client_id, journal_id)
-            register(client_id, journal_id, sub_id) if sub_id
+        @client_list.each_pair { |tiers_id, client_id| process_client(tiers_id, client_id) }
+        p @registry
+      end
+
+      # TODO: comment
+      def process_client(tiers_id, client_id)
+        @journal_ids.each do |journal_id|
+          sub_id = build_subscription(client_id, journal_id)
+          alt_subs = find_subscription(tiers_id, journal_id)
+          register("NEW", tiers_id, client_id, journal_id, sub_id) if sub_id
+          alt_subs.each do |alt_sub|
+            alt_sub_id = alt_sub[:abonnement]
+            return if sub_id && alt_sub_id == sub_id
+            alt_client_id = alt_sub[:client_sage_id]
+            register("OLD", tiers_id, alt_client_id, journal_id, alt_sub_id)
           end
         end
-        save_registry
       end
     end
   end

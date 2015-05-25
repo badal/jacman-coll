@@ -11,11 +11,11 @@ module JacintheManagement
     TAB = "\t"
 
     # fetch a record in database
-    # @param [String] database_name name of table in database
+    # @param [String] table_name name of table in database
     # @param [#to_s] id identifier of record
     # @return [Hash|nil] record as a Hash, nil if not existing
-    def self.item(database_name, id)
-      query = "select * from #{database_name} where #{database_name}_id = \"#{id}\""
+    def self.item(table_name, id)
+      query = "select * from #{table_name} where #{table_name}_id = \"#{id}\""
       Fetch.new(query).hashes.first
     end
 

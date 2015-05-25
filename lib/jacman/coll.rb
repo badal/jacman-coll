@@ -14,6 +14,7 @@ utils =  File.expand_path('../../../jacman-utils/lib/jacman/utils.rb')
 
 require_relative 'coll/version.rb'
 require_relative 'coll/fetch.rb'
+require_relative 'coll/e_sub.rb'
 require_relative 'coll/globals.rb'
 require_relative 'coll/collective.rb'
 
