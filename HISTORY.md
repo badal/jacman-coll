@@ -1,3 +1,5 @@
+## [v0.4.0]
+* notification added
 
 ## [v0.3.0]
 * register old subscriptions to same journals

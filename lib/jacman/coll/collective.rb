@@ -126,7 +126,7 @@ module JacintheManagement
       end
 
       # TODO: comment
-      def find_subscription(tiers_id, journal_id)
+      def find_subscriptions(tiers_id, journal_id)
         ESub.all.select do |item|
           item[:tiers_id].to_i == tiers_id &&
               item[:revue].to_i == journal_id &&
@@ -156,18 +156,42 @@ module JacintheManagement
 
       # TODO: comment
       def process_client(tiers_id, client_id)
+        new_sub_ids = []
         @journal_ids.each do |journal_id|
-          sub_id = build_subscription(client_id, journal_id)
-          alt_subs = find_subscription(tiers_id, journal_id)
-          register("NEW", tiers_id, client_id, journal_id, sub_id) if sub_id
-          alt_subs.each do |alt_sub|
-            alt_sub_id = alt_sub[:abonnement]
-            return if sub_id && alt_sub_id == sub_id
-            alt_client_id = alt_sub[:client_sage_id]
-            register("OLD", tiers_id, alt_client_id, journal_id, alt_sub_id)
-          end
+          register_existing_subscriptions(tiers_id, journal_id)
+          sub_id = build_and_register_subscription(tiers_id, client_id, journal_id)
+          new_sub_ids << sub_id
+        end
+        new_sub_ids.compact!
+        notify(tiers_id, new_sub_ids)
+      end
+
+      # TODO: comment
+      def notify(tiers_id, new_sub_ids)
+        return if new_sub_ids.empty?
+        notifier = Notifier.new(tiers_id, new_sub_ids)
+        puts notifier.notify
+      end
+
+      # TODO: comment
+      def build_and_register_subscription(tiers_id, client_id, journal_id)
+        sub_id = build_subscription(client_id, journal_id)
+        if sub_id
+          register("NEW", tiers_id, client_id, journal_id, sub_id.to_i)
+        end
+        sub_id
+      end
+
+      # TODO: comment
+      def register_existing_subscriptions(tiers_id, journal_id)
+        alt_subs = find_subscriptions(tiers_id, journal_id)
+        alt_subs.each do |alt_sub|
+          alt_sub_id = alt_sub[:abonnement]
+          alt_client_id = alt_sub[:client_sage_id]
+          register("OLD", tiers_id, alt_client_id, journal_id, alt_sub_id.to_i)
         end
       end
+
     end
   end
 end
