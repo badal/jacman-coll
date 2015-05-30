@@ -10,14 +10,10 @@ module JacintheManagement
   module Coll
     MAJOR = 0
     MINOR = 4
-    TINY = 0
+    TINY = 1
 
     VERSION = [MAJOR, MINOR, TINY].join('.')
   end
 end
 
-if $PROGRAM_NAME == __FILE__
-
-  puts JacintheManagement::Coll::VERSION
-
-end
+puts JacintheManagement::Coll::VERSION if $PROGRAM_NAME == __FILE__

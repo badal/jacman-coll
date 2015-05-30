@@ -6,7 +6,6 @@
 #
 # (c) Michel Demazure <michel@demazure.com>
 
-
 # require 'set'
 
 require_relative 'coll/version.rb'

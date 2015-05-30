@@ -9,6 +9,7 @@
 module JacintheManagement
   module Coll
     # current electronic subscriptions
+    # FIXME: useless class ; move 'all' method to globals
     class ESub
       # TODO: to put in a file
       SQL_INITIAL = 'SELECT client_sage_client_final tiers_id,
@@ -21,7 +22,8 @@ WHERE abonnement_type = 2
 AND abonnement_annee >= year(now()) - 1
 AND abonnement_ignorer = 0'.gsub("\n", ' ')
 
-      Query = <<ESQL
+      # TODO: to put in a file
+      QUERY = <<ESQL
 SELECT client_sage_client_final tiers_id,
 abonnement_client_sage client_sage_id, revue_id revue,
 abonnement_annee annee, abonnement_id abonnement
@@ -35,7 +37,7 @@ ESQL
 
       # @return [Array<Hash>] all electronic e_subs as hashes
       def self.all
-        @all ||= Fetch.new(Query.gsub!("\n", ' ')).hashes
+        @all ||= Fetch.new(QUERY.gsub!("\n", ' ')).hashes
       end
 
       # @return [Array<Hash>] all institutional electronic e_subs as hashes
@@ -45,4 +47,3 @@ ESQL
     end
   end
 end
-

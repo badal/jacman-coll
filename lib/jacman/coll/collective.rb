@@ -37,10 +37,6 @@ module JacintheManagement
         @base_subscription_hash = build_base_subscription_hash(name, billing)
       end
 
-      def register(type, tiers_id, client_id, revue_id, abonnement_id)
-        @registry << [type, tiers_id, client_id, revue_id, abonnement_id]
-      end
-
       def register(*ary)
         @registry << ary
       end
@@ -55,19 +51,19 @@ module JacintheManagement
           fail ArgumentError, "Pas de client #{provider}"
         end
         {
-            client_sage_compte_collectif: 1,
-            client_sage_categorie_comptable: 1,
-            client_sage_paiement_chez: "'#{provider}'"
+          client_sage_compte_collectif: 1,
+          client_sage_categorie_comptable: 1,
+          client_sage_paiement_chez: "'#{provider}'"
         }
       end
 
       def build_base_subscription_hash(name, billing)
         {
-            abonnement_annee: year,
-            abonnement_type: 2,
-            abonnement_remarque: "'abonnement collectif #{name}'",
-            abonnement_facture: "'#{billing}'",
-            abonnement_reference_commande: "'ABO#{@year.two_digits}-#{name}'"
+          abonnement_annee: year,
+          abonnement_type: 2,
+          abonnement_remarque: "'abonnement collectif #{name}'",
+          abonnement_facture: "'#{billing}'",
+          abonnement_reference_commande: "'ABO#{@year.two_digits}-#{name}'"
         }
       end
 
@@ -77,11 +73,11 @@ module JacintheManagement
       # @return [Hash] parameter hash for client
       def client_parameters_for(tiers_id)
         specific = {
-            client_sage_id: "'#{tiers_id}#{@name}'",
-            client_sage_client_final: "#{tiers_id}",
-            client_sage_intitule: "'#{tiers_id}/Collectif/#{name}'",
-            client_sage_abrege: "'#{tiers_id}-#{@name}'",
-            client_sage_livraison_chez: "'#{tiers_id}'"
+          client_sage_id: "'#{tiers_id}#{@name}'",
+          client_sage_client_final: "#{tiers_id}",
+          client_sage_intitule: "'#{tiers_id}/Collectif/#{name}'",
+          client_sage_abrege: "'#{tiers_id}-#{@name}'",
+          client_sage_livraison_chez: "'#{tiers_id}'"
         }
         @base_client_hash.merge(specific)
       end
@@ -107,8 +103,8 @@ module JacintheManagement
       # @param [Integer] journal_id id of journal
       def subscription_parameters_for(client_id, journal_id)
         specific = {
-            abonnement_client_sage: client_id,
-            abonnement_revue: journal_id
+          abonnement_client_sage: client_id,
+          abonnement_revue: journal_id
         }
         @base_subscription_hash.merge(specific)
       end
@@ -125,16 +121,23 @@ module JacintheManagement
         end
       end
 
-      # TODO: comment
+      # find existing subscriptions
+      #
+      # @param [Integer|String] tiers_id identifier of tiers
+      # @param [Integer|String] journal_id identifier of journal
+      # @return [Array<Subscriptions>] all subscriptions for these parameters
       def find_subscriptions(tiers_id, journal_id)
         ESub.all.select do |item|
           item[:tiers_id].to_i == tiers_id &&
-              item[:revue].to_i == journal_id &&
-              item[:annee].to_i == @year
+            item[:revue].to_i == journal_id &&
+            item[:annee].to_i == @year
         end
       end
 
-      # TODO: comment
+      # fill the @client_list hash
+      #
+      # @param [Array<Integer|String>] list list of tiers identifiers
+      # @return [Array<String>] error report if any
       def add_tiers_list(list)
         report = []
         list.each do |tiers_id|
@@ -148,13 +151,18 @@ module JacintheManagement
         report
       end
 
-      # TODO: comment
+      # FIXME: tempo
+      # @return [Array<Array>] registry
       def process
         @client_list.each_pair { |tiers_id, client_id| process_client(tiers_id, client_id) }
-        p @registry
+        @registry
       end
 
-      # TODO: comment
+      # build, register, notify for this client
+      #
+      # @param [String] tiers_id identifier of tiers
+      # @param [String] client_id identifier of client
+      # @return [String] report of notification FIXME: choose
       def process_client(tiers_id, client_id)
         new_sub_ids = []
         @journal_ids.each do |journal_id|
@@ -166,32 +174,42 @@ module JacintheManagement
         notify(tiers_id, new_sub_ids)
       end
 
-      # TODO: comment
+      # notify this tiers
+      #
+      # @param [String] tiers_id identifier od tiers
+      # @param [Array<String>Object] new_sub_ids list of identifier of subscriptions
+      # @return [String] FIXME: tempp
       def notify(tiers_id, new_sub_ids)
         return if new_sub_ids.empty?
         notifier = Notifier.new(tiers_id, new_sub_ids)
+        # TODO: 'puts' this for tests
         puts notifier.notify
       end
 
-      # TODO: comment
+      # build and register the new subscription
+      #
+      # @param [String] tiers_id identifier of tiers
+      # @param [String] client_id identifier of client
+      # @param [String] journal_id identifier of journal
+      # @return [String] identifier of subscription
       def build_and_register_subscription(tiers_id, client_id, journal_id)
         sub_id = build_subscription(client_id, journal_id)
-        if sub_id
-          register("NEW", tiers_id, client_id, journal_id, sub_id.to_i)
-        end
+        register('NEW', tiers_id, client_id, journal_id, sub_id.to_i) if sub_id
         sub_id
       end
 
-      # TODO: comment
+      # register the old subscriptions with these parameters
+      #
+      # @param [String] tiers_id identifier of tiers
+      # @param [String] journal_id identifier of journal
       def register_existing_subscriptions(tiers_id, journal_id)
         alt_subs = find_subscriptions(tiers_id, journal_id)
         alt_subs.each do |alt_sub|
           alt_sub_id = alt_sub[:abonnement]
           alt_client_id = alt_sub[:client_sage_id]
-          register("OLD", tiers_id, alt_client_id, journal_id, alt_sub_id.to_i)
+          register('OLD', tiers_id, alt_client_id, journal_id, alt_sub_id.to_i)
         end
       end
-
     end
   end
 end

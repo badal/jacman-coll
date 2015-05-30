@@ -8,7 +8,6 @@
 module JacintheManagement
   module Coll
     class DummySubscription
-
       attr_reader :id
       def initialize(sub_id)
         @id = sub_id.to_s
@@ -22,7 +21,6 @@ module JacintheManagement
     end
 
     class Notifier < JacintheManagement::Notifications::Notifier
-
       def initialize(tiers_id, sub_ids)
         subs = sub_ids.map do |sub_id|
           Coll::DummySubscription.new(sub_id)
@@ -37,8 +35,6 @@ module JacintheManagement
       def english_model_file
         super
       end
-
     end
   end
-
 end
