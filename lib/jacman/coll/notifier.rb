@@ -8,28 +8,26 @@
 module JacintheManagement
   module Coll
     class DummySubscription
-      attr_reader :id
-      def initialize(sub_id)
-        @id = sub_id.to_s
-        @name = Coll.journals[sub_id]
-      end
+      attr_reader :id, :report
 
-      # WARNING: only necessary if model files use "REVUES"
-      def report
-        @name
+      def initialize(journal_id)
+        @id = journal_id.to_s
+        @report = Coll.journals[journal_id.to_i].last
       end
     end
 
     class Notifier < JacintheManagement::Notifications::Notifier
-      def initialize(tiers_id, sub_ids)
-        subs = sub_ids.map do |sub_id|
-          Coll::DummySubscription.new(sub_id)
+     CNRS_MODEL_FILE = File.join(Core::MODEL_DIR, 'cnrs_model_mail.txt')
+
+      def initialize(tiers_id, journal_ids)
+        subs = journal_ids.map do |jrl_id|
+          Coll::DummySubscription.new(jrl_id)
         end
         super(tiers_id, subs)
       end
 
       def french_model_file
-        super
+        CNRS_MODEL_FILE
       end
 
       def english_model_file

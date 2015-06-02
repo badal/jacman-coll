@@ -18,6 +18,7 @@ module JacintheManagement
   module Coll
     # collective electronic subscriptions
     class CollectiveSubscription
+      TAB = "\t"
       attr_reader :name, :client_list, :registry
       attr_accessor :journal_ids, :billing, :year
 
@@ -31,14 +32,14 @@ module JacintheManagement
         @name = name
         @journal_ids = journal_ids
         @client_list = {}
-        @registry = []
+        @registry = [['Type', 'Tiers', 'Client', 'Revue', 'Abont'].join(TAB)]
         @year = year
         @base_client_hash = build_base_client_hash(provider)
         @base_subscription_hash = build_base_subscription_hash(name, billing)
       end
 
       def register(*ary)
-        @registry << ary
+        @registry << ary.join(TAB)
       end
 
       # TODO: write method
@@ -155,7 +156,7 @@ module JacintheManagement
       # @return [Array<Array>] registry
       def process
         @client_list.each_pair { |tiers_id, client_id| process_client(tiers_id, client_id) }
-        @registry
+        [@registry, Notifications::Register.all]
       end
 
       # build, register, notify for this client
@@ -164,24 +165,23 @@ module JacintheManagement
       # @param [String] client_id identifier of client
       # @return [String] report of notification FIXME: choose
       def process_client(tiers_id, client_id)
-        new_sub_ids = []
+        new_journal_ids = []
         @journal_ids.each do |journal_id|
           register_existing_subscriptions(tiers_id, journal_id)
           sub_id = build_and_register_subscription(tiers_id, client_id, journal_id)
-          new_sub_ids << sub_id
+          new_journal_ids << journal_id if sub_id
         end
-        new_sub_ids.compact!
-        notify(tiers_id, new_sub_ids)
+        notify(tiers_id, new_journal_ids)
       end
 
       # notify this tiers
       #
       # @param [String] tiers_id identifier od tiers
-      # @param [Array<String>Object] new_sub_ids list of identifier of subscriptions
+      # @param [Array<String>Object] new_journal_ids list of identifier of journals
       # @return [String] FIXME: tempp
-      def notify(tiers_id, new_sub_ids)
-        return if new_sub_ids.empty?
-        notifier = Notifier.new(tiers_id, new_sub_ids)
+      def notify(tiers_id, new_journal_ids)
+        return if new_journal_ids.empty?
+        notifier = Notifier.new(tiers_id, new_journal_ids)
         # TODO: 'puts' this for tests
         puts notifier.notify
       end
