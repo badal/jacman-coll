@@ -17,7 +17,7 @@ module JacintheManagement
     end
 
     class Notifier < JacintheManagement::Notifications::Notifier
-     CNRS_MODEL_FILE = File.join(Core::MODEL_DIR, 'cnrs_french_model_mail.txt')
+      CNRS_MODEL_FILE = File.join(Core::MODEL_DIR, 'cnrs_french_model_mail.txt')
 
       def initialize(tiers_id, journal_ids)
         subs = journal_ids.map do |jrl_id|
@@ -30,6 +30,7 @@ module JacintheManagement
         CNRS_MODEL_FILE
       end
 
+      # FIXME: write file
       def english_model_file
         super
       end

@@ -11,19 +11,14 @@ module JacintheManagement
     TAB = "\t"
 
     class Subscriber
-
       attr_reader :client_list, :registry
       def initialize(collective)
         @collective = collective
         @tiers_list = []
         @client_list = {}
-        @registry = [['Type', 'Tiers', 'Client', 'Revue', 'Abont'].join(TAB)]
+        @registry = [%w(Type Tiers Client Revue Abont).join(TAB)]
         @base_client_hash = collective.base_client_hash
         @base_subscription_hash = collective.build_base_subscription_hash
-      end
-
-      def add_tiers
-
       end
 
       def register(*ary)
@@ -42,11 +37,11 @@ module JacintheManagement
       def client_parameters_for(tiers_id)
         name = @collective.name
         specific = {
-            client_sage_id: "'#{tiers_id}#{name}'",
-            client_sage_client_final: "#{tiers_id}",
-            client_sage_intitule: "'#{tiers_id}/Collectif/#{name}'",
-            client_sage_abrege: "'#{tiers_id}-#{name}'",
-            client_sage_livraison_chez: "'#{tiers_id}'"
+          client_sage_id: "'#{tiers_id}#{name}'",
+          client_sage_client_final: "#{tiers_id}",
+          client_sage_intitule: "'#{tiers_id}/Collectif/#{name}'",
+          client_sage_abrege: "'#{tiers_id}-#{name}'",
+          client_sage_livraison_chez: "'#{tiers_id}'"
         }
         @base_client_hash.merge(specific)
       end
@@ -72,8 +67,8 @@ module JacintheManagement
       # @param [Integer] journal_id id of journal
       def subscription_parameters_for(client_id, journal_id)
         specific = {
-            abonnement_client_sage: client_id,
-            abonnement_revue: journal_id
+          abonnement_client_sage: client_id,
+          abonnement_revue: journal_id
         }
         @base_subscription_hash.merge(specific)
       end
@@ -96,10 +91,10 @@ module JacintheManagement
       # @param [Integer|String] journal_id identifier of journal
       # @return [Array<Subscriptions>] all subscriptions for these parameters
       def find_subscriptions(tiers_id, journal_id)
-        ESub.all.select do |item|
+        Coll.all_esubs.select do |item|
           item[:tiers_id].to_i == tiers_id &&
-              item[:revue].to_i == journal_id &&
-              item[:annee].to_i == @collective.year
+            item[:revue].to_i == journal_id &&
+            item[:annee].to_i == @collective.year
         end
       end
 
@@ -108,18 +103,21 @@ module JacintheManagement
       # @param [Array<Integer|String>] list list of tiers identifiers
       # @return [Array<String>] error report if any
       def add_tiers_list(list)
-        @tiers_list = []
-        report = []
-        list.each do |tiers_id|
-          client_id = specific_client_for(tiers_id)
-          if client_id
-            @client_list[tiers_id] = client_id
-            @tiers_list << tiers_id
-          else
-            report << "pas de tiers #{tiers_id } ou pas de client pour ce tiers"
-          end
+        report = list.map { |tiers_id| add_tiers(tiers_id) }
+        report.compact
+      end
+
+      # @param [Integer] tiers_id identifier of tiers
+      # @return [Array<String>] error report
+      def add_tiers(tiers_id)
+        client_id = specific_client_for(tiers_id)
+        if client_id
+          @client_list[tiers_id] = client_id
+          @tiers_list << tiers_id
+          nil
+        else
+          "pas de tiers #{tiers_id } ou pas de client pour ce tiers"
         end
-        report
       end
 
       # FIXME: tempo
@@ -151,7 +149,7 @@ module JacintheManagement
       # @return [String] FIXME: tempp
       def notify(tiers_id, new_journal_ids)
         return if new_journal_ids.empty?
-        notifier = Notifier.new(tiers_id, new_journal_ids)
+        notifier = Coll::Notifier.new(tiers_id, new_journal_ids)
         # TODO: 'puts' this for tests
         puts notifier.notify
       end
@@ -180,8 +178,6 @@ module JacintheManagement
           register('OLD', tiers_id, alt_client_id, journal_id, alt_sub_id.to_i)
         end
       end
-
     end
   end
 end
-

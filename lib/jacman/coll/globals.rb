@@ -76,6 +76,23 @@ module JacintheManagement
     def self.fetch_journals
       Fetch.new('select * from revue;').table
     end
+    # TODO: to put in a file
+    QUERY = <<ESQL
+SELECT client_sage_client_final tiers_id,
+abonnement_client_sage client_sage_id, revue_id revue,
+abonnement_annee annee, abonnement_id abonnement
+FROM abonnement LEFT JOIN revue ON revue_id = abonnement_revue
+LEFT JOIN client_sage ON client_sage_id = abonnement_client_sage
+LEFT JOIN tiers ON client_sage_client_final = tiers_id
+WHERE abonnement_type = 2
+AND abonnement_annee >= year(now()) - 1
+AND abonnement_ignorer = 0
+ESQL
+
+    # @return [Array<Hash>] all electronic e_subs as hashes
+    def self.all_esubs
+      @all_esubs ||= Fetch.new(QUERY.gsub!("\n", ' ')).hashes
+    end
 
     # FIXME: convert values to IpRange ?
     # FIXME: to cache
