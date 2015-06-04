@@ -33,6 +33,9 @@ module JacintheManagement
         @billing = billing
         @journal_ids = journal_ids
         @year = year
+        unless Coll.fetch_client(@provider)
+          fail ArgumentError, " Pas de client #{@provider}"
+        end
       end
 
       def self.from_hash(hsh)
@@ -61,9 +64,6 @@ module JacintheManagement
       end
 
       def base_client_hash
-        unless Coll.fetch_client(@provider)
-          fail ArgumentError, " Pas de client #{@provider}"
-        end
         {
             client_sage_compte_collectif: 1,
             client_sage_categorie_comptable: 1,

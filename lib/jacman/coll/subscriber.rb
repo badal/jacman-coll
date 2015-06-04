@@ -164,7 +164,8 @@ module JacintheManagement
       # @return [String] identifier of subscription
       def build_and_register_subscription(tiers_id, client_id, journal_id)
         sub_id = build_subscription(client_id, journal_id)
-        register('NEW', tiers_id, client_id, journal_id, sub_id.to_i) if sub_id
+        journal = Coll.journals[journal_id].first
+        register('NEW', tiers_id, client_id, journal, sub_id.to_i) if sub_id
         sub_id
       end
 
@@ -177,7 +178,8 @@ module JacintheManagement
         alt_subs.each do |alt_sub|
           alt_sub_id = alt_sub[:abonnement]
           alt_client_id = alt_sub[:client_sage_id]
-          register('OLD', tiers_id, alt_client_id, journal_id, alt_sub_id.to_i)
+          journal = Coll.journals[journal_id].first
+          register('OLD', tiers_id, alt_client_id, journal, alt_sub_id.to_i)
         end
       end
     end
