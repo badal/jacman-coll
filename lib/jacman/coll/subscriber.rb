@@ -9,9 +9,10 @@
 module JacintheManagement
   module Coll
     TAB = "\t"
-
+    # processor of collective subscriptions
     class Subscriber
       attr_reader :client_list, :registry
+      # @param [Collective] collective to process
       def initialize(collective)
         @collective = collective
         @tiers_list = []
@@ -21,6 +22,8 @@ module JacintheManagement
         @base_subscription_hash = collective.build_base_subscription_hash
       end
 
+      # add line to registry
+      # @param [Array] ary to be registered
       def register(*ary)
         @registry << ary.join(TAB)
       end
@@ -120,10 +123,9 @@ module JacintheManagement
         end
       end
 
-      # FIXME: tempo
-      # @return [Array<Array>] registry
+      # @return [Array<String> * 2] full report
       def process
-        @client_list.each_pair { |tiers_id, client_id| process_client(tiers_id, client_id) }
+        @client_list.each_pair { |pair| process_client(*pair) }
         [@registry, Notifications::Register.all]
       end
 

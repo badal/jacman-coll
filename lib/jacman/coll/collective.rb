@@ -35,7 +35,23 @@ module JacintheManagement
         @year = year
       end
 
-      def insert_query
+      def self.from_hash(hsh)
+        new(hsh[:collectif_nom],
+            hsh[:collectif_client],
+            hsh[:collectif_facture],
+            hsh[:collectif_revues].split(',').map(&:to_i),
+            hsh[:collectif_annee].to_i)
+      end
+
+      def self.number
+        Fetch.new('select count(*) from collectif').array.last.last.to_i
+      end
+
+      def self.extract(indx)
+        from_hash(Fetch.item('collectif', indx))
+      end
+
+      def insertion_query
         ["INSERT IGNORE INTO collectif SET collectif_nom = '#{@name}'",
          "collectif_client = '#{@provider}'",
          "collectif_annee = #{@year}",
@@ -49,19 +65,19 @@ module JacintheManagement
           fail ArgumentError, " Pas de client #{@provider}"
         end
         {
-          client_sage_compte_collectif: 1,
-          client_sage_categorie_comptable: 1,
-          client_sage_paiement_chez: "'#{@provider}'"
+            client_sage_compte_collectif: 1,
+            client_sage_categorie_comptable: 1,
+            client_sage_paiement_chez: "'#{@provider}'"
         }
       end
 
       def build_base_subscription_hash
         {
-          abonnement_annee: year,
-          abonnement_type: 2,
-          abonnement_remarque: "'abonnement collectif #{@name}'",
-          abonnement_facture: "'#{@billing}'",
-          abonnement_reference_commande: "'ABO#{@year.two_digits}-#{@name}'"
+            abonnement_annee: year,
+            abonnement_type: 2,
+            abonnement_remarque: "'abonnement collectif #{@name}'",
+            abonnement_facture: "'#{@billing}'",
+            abonnement_reference_commande: "'ABO#{@year.two_digits}-#{@name}'"
         }
       end
     end

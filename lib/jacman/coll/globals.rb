@@ -71,11 +71,11 @@ module JacintheManagement
       @journals.keys
     end
 
-    # FIXME: could be array
     # @return [Hash] id => [code, name]
     def self.fetch_journals
       Fetch.new('select * from revue;').table
     end
+
     # TODO: to put in a file
     QUERY = <<ESQL
 SELECT client_sage_client_final tiers_id,
@@ -94,6 +94,7 @@ ESQL
       @all_esubs ||= Fetch.new(QUERY.gsub!("\n", ' ')).hashes
     end
 
+    # TODO: Useless ?
     # FIXME: convert values to IpRange ?
     # FIXME: to cache
     # @return [Array<Array>] indexed by tiers_id, values are arrays of IPs

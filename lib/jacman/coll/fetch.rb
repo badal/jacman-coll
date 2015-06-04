@@ -46,7 +46,6 @@ module JacintheManagement
       end
     end
 
-    # FIXME: choose Array or Hash
     # @return [Array] query answer : array (indexed by id, value is rest of record)
     def table
       table = []
