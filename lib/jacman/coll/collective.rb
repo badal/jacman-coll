@@ -19,7 +19,7 @@ module JacintheManagement
     # collective electronic subscriptions
     class CollectiveSubscription
       TAB = "\t"
-      attr_reader :name
+      attr_reader :name, :provider
       attr_accessor :journal_ids, :billing, :year
 
       # @param [String] name of subscription to be used in Jacinthe
@@ -33,9 +33,18 @@ module JacintheManagement
         @billing = billing
         @journal_ids = journal_ids
         @year = year
-        unless Coll.fetch_client(@provider)
-          fail ArgumentError, " Pas de client #{@provider}"
+      end
+
+      def report
+        journals = Coll.journals.values_at(*@journal_ids).map do |line|
+          line.join(' : ')
         end
+        ([
+            "  Nom : #{@name}",
+            "  Client : #{@provider}",
+            "  Année : #{@year}",
+            "  Facture : #{@billing}"
+        ] + journals)
       end
 
       def self.from_hash(hsh)
@@ -46,14 +55,13 @@ module JacintheManagement
             hsh[:collectif_annee].to_i)
       end
 
-      def self.number
-        Fetch.new('select count(*) from collectif').array.last.last.to_i
+      def self.extract_all
+        Fetch.new('select * from collectif').hashes.map do |hsh|
+          from_hash(hsh)
+        end
       end
 
-      def self.extract(indx)
-        from_hash(Fetch.item('collectif', indx))
-      end
-
+      # TODO: change with VALUES and ON DUPLICATE KEY UPDATE
       def insertion_query
         ["INSERT IGNORE INTO collectif SET collectif_nom = '#{@name}'",
          "collectif_client = '#{@provider}'",
@@ -63,7 +71,14 @@ module JacintheManagement
         ].join(', ')
       end
 
+      def insert_in_database
+        Fetch.new(insertion_query).array
+      end
+
       def base_client_hash
+        unless Coll.fetch_client(@provider)
+          fail ArgumentError, " Pas de client #{@provider}"
+        end
         {
             client_sage_compte_collectif: 1,
             client_sage_categorie_comptable: 1,
