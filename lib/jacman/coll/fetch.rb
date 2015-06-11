@@ -7,6 +7,7 @@
 # (c) Michel Demazure <michel@demazure.com>
 
 module JacintheManagement
+  # wrapping class for SQL queries
   class Fetch
     TAB = "\t"
 

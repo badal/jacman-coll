@@ -17,7 +17,7 @@ end
 module JacintheManagement
   module Coll
     # collective electronic subscriptions
-    class CollectiveSubscription
+    class Collective
       TAB = "\t"
       attr_reader :name, :provider
       attr_accessor :journal_ids, :billing, :year
@@ -35,6 +35,7 @@ module JacintheManagement
         @year = year
       end
 
+      # @return [Array<String>] parameters of this collective
       def report
         journals = Coll.journals.values_at(*@journal_ids).map do |line|
           line.join(' : ')
@@ -47,6 +48,8 @@ module JacintheManagement
         ] + journals)
       end
 
+      # @param [Object] hsh parameters
+      # @return [Collective] new collective
       def self.from_hash(hsh)
         new(hsh[:collectif_nom],
             hsh[:collectif_client],
@@ -55,6 +58,7 @@ module JacintheManagement
             hsh[:collectif_annee].to_i)
       end
 
+      # @return [Array<Collective>] all collectives in database
       def self.extract_all
         Fetch.new('select * from collectif').hashes.map do |hsh|
           from_hash(hsh)
@@ -62,6 +66,7 @@ module JacintheManagement
       end
 
       # TODO: change with VALUES and ON DUPLICATE KEY UPDATE
+      # @return [String] MySQL insertion query
       def insertion_query
         ["INSERT IGNORE INTO collectif SET collectif_nom = '#{@name}'",
          "collectif_client = '#{@provider}'",
@@ -71,10 +76,12 @@ module JacintheManagement
         ].join(', ')
       end
 
+      # insert this collective in Jacinthe
       def insert_in_database
         Fetch.new(insertion_query).array
       end
 
+      # @return [Hash] basis for client parameters
       def base_client_hash
         unless Coll.fetch_client(@provider)
           fail ArgumentError, " Pas de client #{@provider}"
@@ -86,13 +93,14 @@ module JacintheManagement
         }
       end
 
+      # @return [Hash] basis for subscription parameters
       def build_base_subscription_hash
         {
           abonnement_annee: year,
           abonnement_type: 2,
           abonnement_remarque: "'abonnement collectif #{@name}'",
           abonnement_facture: "'#{@billing}'",
-          abonnement_reference_commande: "'ABO#{@year.two_digits}-#{@name}'"
+          abonnement_reference_commande: "'ABO-#{@name}'"
         }
       end
     end

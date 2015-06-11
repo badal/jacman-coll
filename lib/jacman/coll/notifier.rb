@@ -9,6 +9,7 @@ module JacintheManagement
   Notifications::FAKE = true
 
   module Coll
+    # simulating subscription for notifier
     class DummySubscription
       attr_reader :id, :report
 
@@ -18,6 +19,7 @@ module JacintheManagement
       end
     end
 
+    # specific notifier for cnrs
     class Notifier < JacintheManagement::Notifications::Notifier
       CNRS_MODEL_FILE = File.join(Core::MODEL_DIR, 'cnrs_french_model_mail.txt')
 
@@ -28,11 +30,13 @@ module JacintheManagement
         super(tiers_id, subs)
       end
 
+      # specific mail model file
       def french_model_file
         CNRS_MODEL_FILE
       end
 
       # FIXME: write file
+      # specific mail model file
       def english_model_file
         super
       end

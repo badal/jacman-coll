@@ -7,17 +7,24 @@
 # (c) Michel Demazure <michel@demazure.com>
 
 module JacintheManagement
+  # methods for management of collective subscriptions
   module Coll
     YEAR = Time.now.year
 
+    # @param [#to_s] tiers_id identifier of tiers
+    # @return [Hash|nil] record as a Hash, nil if not existing
     def self.fetch_tiers(tiers_id)
       Fetch.item('tiers', tiers_id)
     end
 
+    # @param [#to_s] client_id identifier of client_sage
+    # @return [Hash|nil] record as a Hash, nil if not existing
     def self.fetch_client(client_id)
       Fetch.item('client_sage', client_id)
     end
 
+    # @param [#to_s] tiers_id identifier of tiers
+    # @return [Array<Hash>] all client with this tiers as client_final
     def self.fetch_client_for_tiers(tiers_id)
       qry = "select * from client_sage where client_sage_client_final=#{tiers_id}"
       Fetch.new(qry).hashes
