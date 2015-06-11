@@ -1,3 +1,6 @@
+## [v0.5.0]
+* subscription : collective / subscriber
+
 ## [v0.4.0]
 * notification added
 

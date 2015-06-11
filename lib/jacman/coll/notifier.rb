@@ -6,6 +6,8 @@
 #
 # (c) Michel Demazure <michel@demazure.com>
 module JacintheManagement
+  Notifications::FAKE = true
+
   module Coll
     class DummySubscription
       attr_reader :id, :report

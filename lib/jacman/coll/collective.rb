@@ -40,10 +40,10 @@ module JacintheManagement
           line.join(' : ')
         end
         ([
-            "  Nom : #{@name}",
-            "  Client : #{@provider}",
-            "  Année : #{@year}",
-            "  Facture : #{@billing}"
+          "  Nom : #{@name}",
+          "  Client : #{@provider}",
+          "  Année : #{@year}",
+          "  Facture : #{@billing}"
         ] + journals)
       end
 
@@ -80,19 +80,19 @@ module JacintheManagement
           fail ArgumentError, " Pas de client #{@provider}"
         end
         {
-            client_sage_compte_collectif: 1,
-            client_sage_categorie_comptable: 1,
-            client_sage_paiement_chez: "'#{@provider}'"
+          client_sage_compte_collectif: 1,
+          client_sage_categorie_comptable: 1,
+          client_sage_paiement_chez: "'#{@provider}'"
         }
       end
 
       def build_base_subscription_hash
         {
-            abonnement_annee: year,
-            abonnement_type: 2,
-            abonnement_remarque: "'abonnement collectif #{@name}'",
-            abonnement_facture: "'#{@billing}'",
-            abonnement_reference_commande: "'ABO#{@year.two_digits}-#{@name}'"
+          abonnement_annee: year,
+          abonnement_type: 2,
+          abonnement_remarque: "'abonnement collectif #{@name}'",
+          abonnement_facture: "'#{@billing}'",
+          abonnement_reference_commande: "'ABO#{@year.two_digits}-#{@name}'"
         }
       end
     end

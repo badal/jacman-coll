@@ -28,11 +28,6 @@ module JacintheManagement
         @registry << ary.join(TAB)
       end
 
-      # TODO: write method
-      def save_registry
-        p @registry
-      end
-
       # build specific client hash
       #
       # @param [Integer] tiers_id
@@ -119,7 +114,7 @@ module JacintheManagement
           @tiers_list << tiers_id
           nil
         else
-          "pas de tiers #{tiers_id } ou pas de client pour ce tiers"
+          "pas de tiers #{tiers_id} ou pas de client pour ce tiers"
         end
       end
 
