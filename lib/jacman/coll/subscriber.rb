@@ -34,10 +34,12 @@ module JacintheManagement
       # @return [Hash] parameter hash for client
       def client_parameters_for(tiers_id)
         name = @collective.name
+        tiers_name = Coll.fetch_tiers_name(tiers_id)
+        intitule = "'#{tiers_name}/Collectif/#{name}'"
         specific = {
           client_sage_id: "'#{tiers_id}#{name}'",
           client_sage_client_final: "#{tiers_id}",
-          client_sage_intitule: "'#{tiers_id}/Collectif/#{name}'",
+          client_sage_intitule: intitule,
           client_sage_abrege: "'#{tiers_id}-#{name}'",
           client_sage_livraison_chez: "'#{tiers_id}'"
         }
@@ -121,7 +123,9 @@ module JacintheManagement
       # @return [Array<String> * 2] full report
       def process
         @client_list.each_pair { |pair| process_client(*pair) }
-        [@registry, Notifications::Register.all]
+        # WARNING : notification deleted
+        # [@registry, Notifications::Register.all]
+        @registry
       end
 
       # build, register, notify for this client
@@ -136,10 +140,10 @@ module JacintheManagement
           sub_id = build_and_register_subscription(tiers_id, client_id, journal_id)
           new_journal_ids << journal_id if sub_id
         end
-        notify(tiers_id, new_journal_ids)
+      #  notify(tiers_id, new_journal_ids)
       end
 
-      # notify this tiers
+      # WARNING: not used anymore notify this tiers
       #
       # @param [String] tiers_id identifier od tiers
       # @param [Array<String>Object] new_journal_ids list of identifier of journals

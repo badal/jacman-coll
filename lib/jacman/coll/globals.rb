@@ -24,6 +24,12 @@ module JacintheManagement
     end
 
     # @param [#to_s] tiers_id identifier of tiers
+    # @return [String] field :tiers_nom
+    def self.fetch_tiers_name(tiers_id)
+      fetch_tiers(tiers_id)[:tiers_nom]
+    end
+
+    # @param [#to_s] tiers_id identifier of tiers
     # @return [Array<Hash>] all client with this tiers as client_final
     def self.fetch_client_for_tiers(tiers_id)
       qry = "select * from client_sage where client_sage_client_final=#{tiers_id}"

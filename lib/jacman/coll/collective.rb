@@ -83,13 +83,15 @@ module JacintheManagement
 
       # @return [Hash] basis for client parameters
       def base_client_hash
-        unless Coll.fetch_client(@provider)
+        provider_in_db = Coll.fetch_client(@provider)
+        unless provider_in_db
           fail ArgumentError, " Pas de client #{@provider}"
         end
+        paying = provider_in_db[:client_sage_paiement_chez]
         {
           client_sage_compte_collectif: 1,
           client_sage_categorie_comptable: 1,
-          client_sage_paiement_chez: "'#{@provider}'"
+          client_sage_paiement_chez: paying
         }
       end
 

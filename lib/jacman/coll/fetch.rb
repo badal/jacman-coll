@@ -16,7 +16,8 @@ module JacintheManagement
     # @param [#to_s] id identifier of record
     # @return [Hash|nil] record as a Hash, nil if not existing
     def self.item(table_name, id)
-      query = "select * from #{table_name} where #{table_name}_id = \"#{id}\""
+      value = id.class == String ? "'#{id}'" : id
+      query = "select * from #{table_name} where #{table_name}_id = #{value}"
       Fetch.new(query).hashes.first
     end
 
