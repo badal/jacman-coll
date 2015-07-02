@@ -120,19 +120,18 @@ module JacintheManagement
         end
       end
 
-      # @return [Array<String> * 2] full report
+      # process all clients
+      #
+      # @return [Array<String>] report
       def process
         @client_list.each_pair { |pair| process_client(*pair) }
-        # WARNING : notification deleted
-        # [@registry, Notifications::Register.all]
         @registry
       end
 
-      # build, register, notify for this client
+      # build, register for this client
       #
       # @param [String] tiers_id identifier of tiers
       # @param [String] client_id identifier of client
-      # @return [String] report of notification FIXME: choose
       def process_client(tiers_id, client_id)
         new_journal_ids = []
         @collective.journal_ids.each do |journal_id|
@@ -140,19 +139,6 @@ module JacintheManagement
           sub_id = build_and_register_subscription(tiers_id, client_id, journal_id)
           new_journal_ids << journal_id if sub_id
         end
-      #  notify(tiers_id, new_journal_ids)
-      end
-
-      # WARNING: not used anymore notify this tiers
-      #
-      # @param [String] tiers_id identifier od tiers
-      # @param [Array<String>Object] new_journal_ids list of identifier of journals
-      # @return [String] FIXME: tempp
-      def notify(tiers_id, new_journal_ids)
-        return if new_journal_ids.empty?
-        notifier = Coll::Notifier.new(tiers_id, new_journal_ids)
-        # TODO: 'puts' this for tests
-        puts notifier.notify
       end
 
       # build and register the new subscription

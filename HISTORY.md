@@ -1,3 +1,6 @@
+## [v0.6.0]
+* reverted : no more automatic notification
+
 ## [v0.5.0]
 * subscription : collective / subscriber
 

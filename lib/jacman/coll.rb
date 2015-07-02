@@ -11,8 +11,6 @@
 require_relative 'coll/version.rb'
 require_relative 'coll/fetch.rb'
 require_relative 'coll/globals.rb'
-# WARNING: notification deleted
-# require_relative 'coll/notifier.rb'
 require_relative 'coll/collective.rb'
 require_relative 'coll/subscriber.rb'
 
