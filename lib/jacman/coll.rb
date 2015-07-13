@@ -15,3 +15,10 @@ require_relative 'coll/collective.rb'
 require_relative 'coll/subscriber.rb'
 
 SQLError = Class.new(ArgumentError)
+
+module JacintheManagement
+  # tools for collective subscriptions management
+  module Coll
+    HELP_FILE = File.join(File.dirname(__FILE__), '..', '..', 'help/help.pdf')
+  end  
+end
