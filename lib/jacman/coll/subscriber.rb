@@ -13,13 +13,15 @@ module JacintheManagement
     class Subscriber
       attr_reader :client_list, :registry
       # @param [Collective] collective to process
-      def initialize(collective)
+      # @param [Bool] mode whether write for good in the DB
+      def initialize(collective, mode = false)
         @collective = collective
         @tiers_list = []
         @client_list = {}
         @registry = [%w(Type Tiers Client Revue Abont).join(TAB)]
         @base_client_hash = collective.base_client_hash
         @base_subscription_hash = collective.build_base_subscription_hash
+        @mode = mode
       end
 
       # add line to registry
@@ -37,11 +39,11 @@ module JacintheManagement
         tiers_name = Coll.fetch_tiers_name(tiers_id)
         intitule = "'#{tiers_name}/Collectif/#{name}'"
         specific = {
-          client_sage_id: "'#{tiers_id}#{name}'",
-          client_sage_client_final: "#{tiers_id}",
-          client_sage_intitule: intitule,
-          client_sage_abrege: "'#{tiers_id}-#{name}'",
-          client_sage_livraison_chez: "'#{tiers_id}'"
+            client_sage_id: "'#{tiers_id}#{name}'",
+            client_sage_client_final: "#{tiers_id}",
+            client_sage_intitule: intitule,
+            client_sage_abrege: "'#{tiers_id}-#{name}'",
+            client_sage_livraison_chez: "'#{tiers_id}'"
         }
         @base_client_hash.merge(specific)
       end
@@ -67,8 +69,8 @@ module JacintheManagement
       # @param [Integer] journal_id id of journal
       def subscription_parameters_for(client_id, journal_id)
         specific = {
-          abonnement_client_sage: client_id,
-          abonnement_revue: journal_id
+            abonnement_client_sage: client_id,
+            abonnement_revue: journal_id
         }
         @base_subscription_hash.merge(specific)
       end
@@ -93,8 +95,8 @@ module JacintheManagement
       def find_subscriptions(tiers_id, journal_id)
         Coll.all_esubs.select do |item|
           item[:tiers_id].to_i == tiers_id &&
-            item[:revue].to_i == journal_id &&
-            item[:annee].to_i == @collective.year
+              item[:revue].to_i == journal_id &&
+              item[:annee].to_i == @collective.year
         end
       end
 
@@ -148,7 +150,7 @@ module JacintheManagement
       # @param [String] journal_id identifier of journal
       # @return [String] identifier of subscription
       def build_and_register_subscription(tiers_id, client_id, journal_id)
-        sub_id = build_subscription(client_id, journal_id)
+        sub_id =  @mode ? build_subscription(client_id, journal_id) : 99999
         journal = Coll.journals[journal_id].first
         register('NEW', tiers_id, client_id, journal, sub_id.to_i) if sub_id
         sub_id
