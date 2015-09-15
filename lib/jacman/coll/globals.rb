@@ -89,7 +89,7 @@ module JacintheManagement
       Fetch.new('select * from revue;').table
     end
 
-
+    # source file for the query
     SQL_FILE = 'find_electronic_subscriptions'
 
     # @return [Array<Hash>] all electronic e_subs as hashes

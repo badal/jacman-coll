@@ -23,6 +23,8 @@ module JacintheManagement
 
     attr_reader :fetch
 
+    # @param [String] file_name sql file where the query script is
+    # @return [Fetch] new instance with this query
     def self.from_script(file_name)
       query = SQLFiles.script(file_name)
       new(query)

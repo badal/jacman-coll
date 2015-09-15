@@ -20,5 +20,5 @@ module JacintheManagement
   # tools for collective subscriptions management
   module Coll
     HELP_FILE = File.join(File.dirname(__FILE__), '..', '..', 'help/help.pdf')
-  end  
+  end
 end
