@@ -89,27 +89,20 @@ module JacintheManagement
       Fetch.new('select * from revue;').table
     end
 
-    # TODO: to put in a file
-    QUERY = <<ESQL
-SELECT client_sage_client_final tiers_id,
-abonnement_client_sage client_sage_id, revue_id revue,
-abonnement_annee annee, abonnement_id abonnement
-FROM abonnement LEFT JOIN revue ON revue_id = abonnement_revue
-LEFT JOIN client_sage ON client_sage_id = abonnement_client_sage
-LEFT JOIN tiers ON client_sage_client_final = tiers_id
-WHERE abonnement_type = 2
-AND abonnement_annee >= year(now()) - 1
-AND abonnement_ignorer = 0
-ESQL
+
+    SQL_FILE = 'find_electronic_subscriptions'
 
     # @return [Array<Hash>] all electronic e_subs as hashes
     def self.all_esubs
-      @all_esubs ||= Fetch.new(QUERY.gsub!("\n", ' ')).hashes
+      @all_esubs ||= Fetch.from_script(SQL_FILE).hashes
     end
+  end
+end
 
-    # TODO: Useless ?
-    # FIXME: convert values to IpRange ?
-    # FIXME: to cache
+__END__
+
+    # convert values to IpRange ?
+    # to cache ?
     # @return [Array<Array>] indexed by tiers_id, values are arrays of IPs
     def self.full_ip_list
       query = 'select tiers_id, tiers_ip_plage from tiers where tiers_ip_plage is not null'
@@ -117,10 +110,6 @@ ESQL
         range ? range.first.chomp.split('\\n') : []
       end
     end
-  end
-end
-
-__END__
 
 table = JacintheManagement::Coll.full_ip_list
 file = File.join(File.dirname(__FILE__), 'data', 'ip_table')

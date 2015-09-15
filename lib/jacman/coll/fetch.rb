@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# File: globals.rb
+# File: fetch.rb
 # Created: 26 December 2014
 #
 # (c) Michel Demazure <michel@demazure.com>
@@ -22,6 +22,11 @@ module JacintheManagement
     end
 
     attr_reader :fetch
+
+    def self.from_script(file_name)
+      query = SQLFiles.script(file_name)
+      new(query)
+    end
 
     # @param [String] qry SQl query
     # @return [Fetch] a new instance

@@ -100,7 +100,7 @@ module JacintheManagement
           abonnement_type: 2,
           abonnement_remarque: "'abonnement collectif #{@name}'",
           abonnement_facture: "'#{@billing}'",
-          abonnement_reference_commande: "'ABO-#{@name}'"
+          abonnement_reference_commande: "'Abo-#{@name}'"
         }
       end
     end
