@@ -74,6 +74,13 @@ module JacintheManagement
       find(table, parameters)
     end
 
+    # mark the client as not to be exported
+    # @param [String] client_id identifier of client
+    def self.set_not_export(client_id)
+      query = "update client_sage set client_sage_a_exporter=0 where client_sage_id=#{client_id}"
+      Fetch.new(query)
+    end
+
     # @return [Array] indexed by journal_id, values are couples [acronym, name]
     def self.journals
       @journals ||= fetch_journals

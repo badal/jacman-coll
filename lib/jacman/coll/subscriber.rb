@@ -36,12 +36,12 @@ module JacintheManagement
       # @return [Hash] parameter hash for client
       def client_parameters_for(tiers_id)
         name = @collective.name
-        tiers_name = Coll.fetch_tiers_name(tiers_id)
-        intitule = "'#{tiers_name}/Collectif/#{name}'"
+        # WARNING: to prevent internal quotes in query
+        tiers_name = Coll.fetch_tiers_name(tiers_id).tr("'", '_')
         specific = {
           client_sage_id: "'#{tiers_id}#{name}'",
           client_sage_client_final: "#{tiers_id}",
-          client_sage_intitule: intitule,
+          client_sage_intitule: "'#{tiers_name}/Collectif/#{name}'",
           client_sage_abrege: "'#{tiers_id}-#{name}'",
           client_sage_livraison_chez: "'#{tiers_id}'"
         }
@@ -56,7 +56,10 @@ module JacintheManagement
         parameters = client_parameters_for(tiers_id)
         client_id = parameters[:client_sage_id]
         cl = Coll.fetch_client(client_id)
-        Coll.insert_in_base('client_sage', parameters) unless cl
+        unless cl
+          Coll.insert_in_base('client_sage', parameters)
+          Coll.set_not_export(client_id)
+        end
         client_id
       rescue SQLError
         nil

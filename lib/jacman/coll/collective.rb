@@ -35,6 +35,16 @@ module JacintheManagement
         @year = year
       end
 
+      # @return [String] full name
+      def name_year
+        "#{@name}#{@year.to_s.sub(/.*(\d\d)$/,'\1' )}"
+      end
+
+      # @return [String] description for GUI
+      def name_space_year
+        "#{@name} #{@year}"
+      end
+
       # @return [Array<String>] parameters of this collective
       def report
         journals = Coll.journals.values_at(*@journal_ids).map do |line|
@@ -44,6 +54,7 @@ module JacintheManagement
           "  Nom : #{@name}",
           "  Client : #{@provider}",
           "  Année : #{@year}",
+          "  Code : #{name_year}",
           "  Facture : #{@billing}"
         ] + journals)
       end
@@ -78,12 +89,15 @@ module JacintheManagement
 
       # insert this collective in Jacinthe
       def insert_in_database
-        Fetch.new(insertion_query).array
+        p insertion_query
+        fet = Fetch.new(insertion_query)
+        p fet
+        fet.array
       end
 
       # @return [Hash] basis for client parameters
       def base_client_hash
-        provider_in_db = Coll.fetch_client(@provider)
+        provider_in_db = Coll.fetch_client("'#{@provider}'")
         fail ArgumentError, " Pas de client #{@provider}" unless provider_in_db
         paying = provider_in_db[:client_sage_paiement_chez]
         {
@@ -98,9 +112,9 @@ module JacintheManagement
         {
           abonnement_annee: year,
           abonnement_type: 2,
-          abonnement_remarque: "'abonnement collectif #{@name}'",
+          abonnement_remarque: "'abonnement collectif #{name_year}'",
           abonnement_facture: "'#{@billing}'",
-          abonnement_reference_commande: "'Abo-#{@name}'"
+          abonnement_reference_commande: "'Abo-#{name_year}'"
         }
       end
     end

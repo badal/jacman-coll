@@ -1,3 +1,6 @@
+## [v0.8]
+* specific clients do not change with year, and are not to be exported
+
 ## [v0.6.0]
 * reverted : no more automatic notification
 
