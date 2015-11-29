@@ -20,7 +20,7 @@ module JacintheManagement
         @client_list = {}
         @registry = [%w(Type Tiers Client Revue Abont).join(TAB)]
         @base_client_hash = collective.base_client_hash
-        @base_subscription_hash = collective.build_base_subscription_hash
+        @base_subscription_hash = collective.base_subscription_hash
         @mode = mode
       end
 
@@ -155,7 +155,7 @@ module JacintheManagement
       def build_and_register_subscription(tiers_id, client_id, journal_id)
         sub_id =  @mode ? build_subscription(client_id, journal_id) : 99_999
         journal = Coll.journals[journal_id].first
-        register('NEW', tiers_id, client_id, journal, sub_id.to_i) if sub_id
+        register('NEW', tiers_id, client_id.tr("'", ''), journal, sub_id.to_i) if sub_id
         sub_id
       end
 

@@ -37,7 +37,7 @@ module JacintheManagement
 
       # @return [String] full name
       def name_year
-        "#{@name}#{@year.to_s.sub(/.*(\d\d)$/,'\1' )}"
+        "#{@name}#{@year.to_s.sub(/.*(\d\d)$/, '\1')}"
       end
 
       # @return [String] description for GUI
@@ -47,16 +47,25 @@ module JacintheManagement
 
       # @return [Array<String>] parameters of this collective
       def report
-        journals = Coll.journals.values_at(*@journal_ids).map do |line|
-          line.join(' : ')
-        end
-        ([
-          "  Nom : #{@name}",
-          "  Client : #{@provider}",
-          "  Année : #{@year}",
-          "  Code : #{name_year}",
-          "  Facture : #{@billing}"
-        ] + journals)
+        [
+            "  Nom : #{@name}",
+            "  Client : #{@provider}",
+            "  Année : #{@year}",
+            "  Code : #{name_year}",
+            "  Facture : #{@billing}",
+        ] +
+            @journal_ids.map do |journal_id|
+              (Coll.journals[journal_id] + [abo_count(journal_id)]).join(' : ')
+            end
+      end
+
+      # @param [Integer] journal_id journal identifier
+      # @return [Integer] number of subscription for this journal
+      def abo_count(journal_id)
+        ref = base_subscription_hash[:abonnement_reference_commande]
+        qry = "select count(*) from abonnement where abonnement_reference_commande = #{ref}\
+ and abonnement_revue=#{journal_id}"
+        Fetch.new(qry).array[1].first.to_i
       end
 
       # @param [Object] hsh parameters
@@ -89,10 +98,7 @@ module JacintheManagement
 
       # insert this collective in Jacinthe
       def insert_in_database
-        p insertion_query
-        fet = Fetch.new(insertion_query)
-        p fet
-        fet.array
+        Fetch.new(insertion_query).array
       end
 
       # @return [Hash] basis for client parameters
@@ -101,20 +107,20 @@ module JacintheManagement
         fail ArgumentError, " Pas de client #{@provider}" unless provider_in_db
         paying = provider_in_db[:client_sage_paiement_chez]
         {
-          client_sage_compte_collectif: 1,
-          client_sage_categorie_comptable: 1,
-          client_sage_paiement_chez: paying
+            client_sage_compte_collectif: 1,
+            client_sage_categorie_comptable: 1,
+            client_sage_paiement_chez: paying
         }
       end
 
       # @return [Hash] basis for subscription parameters
-      def build_base_subscription_hash
+      def base_subscription_hash
         {
-          abonnement_annee: year,
-          abonnement_type: 2,
-          abonnement_remarque: "'abonnement collectif #{name_year}'",
-          abonnement_facture: "'#{@billing}'",
-          abonnement_reference_commande: "'Abo-#{name_year}'"
+            abonnement_annee: year,
+            abonnement_type: 2,
+            abonnement_remarque: "'abonnement collectif #{name_year}'",
+            abonnement_facture: "'#{@billing}'",
+            abonnement_reference_commande: "'Abo-#{name_year}'"
         }
       end
     end
